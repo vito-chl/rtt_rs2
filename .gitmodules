@@ -1,0 +1,3 @@
+[submodule "stm32h750-artpi-h750"]
+	path = stm32h750-artpi-h750
+	url = https://gitee.com/vitors/stm32h750-artpi-h750.git
