@@ -44,36 +44,3 @@
    ```
 
 5. 添加相应的库到 rt-thread 中并完成编译。
-
-
-
-### rt-smart 使用说明：
-
- 1. 复制 rt-smart 文件夹中的 json 文件到你的工程根目录，将json文件内的linker脚本的路径进行相应的修改
-
- 2. 依赖 rtt_rs 库：
-
-    ```toml
-    [dependencies.rtt_rs]
-    version = "0.2.3"
-    path = "../../rtt_rs/"
-    default-features = false
-    features = ["rt-smart"]
-    ```
-
- 3. 对 main 文件进行一些修饰：
-
-    ```rust
-    #![no_std]
-    #![no_main]
-    
-    use rtt_rs::print;
-    
-    // 引出　main　函数提供给 crt
-    #[no_mangle]
-    pub extern "C" fn main(){
-        print!("hello word");
-    }
-    ```
-
-　4. 使用 rt-smart 文件夹中的 build.sh 文件进行构建。
