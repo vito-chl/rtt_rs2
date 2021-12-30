@@ -6,7 +6,8 @@ use std::path::PathBuf;
 fn main() {
     println!("cargo:rerun-if-changed=wrapper.h");
 
-    let rtt_path = env::var("RTT_PATH").unwrap();
+    let rtt_path = env::var("RTT_PATH")
+		.unwrap_or(String::from("stm32h750-artpi-h750"));
 
     let bindings = bindgen::Builder::default()
         .header("wrapper.h")
