@@ -39,6 +39,7 @@ pub mod out;
 pub mod queue;
 pub mod semaphore;
 pub mod thread;
+pub mod param;
 
 mod prelude;
 pub use prelude::v1::*;
@@ -67,32 +68,6 @@ pub enum RTTError {
 }
 
 pub type RTResult<T> = Result<T, RTTError>;
-
-/// This macro is used to indicate the entry function of the system
-/// Function `rust_main` will be called by rt-thread c code
-///
-/// # Example
-/// ```
-/// use rtt_rs2::*;
-///
-/// /* rt-thread will call function main */
-/// entry!(main);
-///
-/// fn main(){
-///     /* ..... */
-/// }
-/// ```
-///
-#[macro_export]
-macro_rules! entry {
-    ($func: ident) => {
-        #[export(name = "rust_main")]
-        fn __rust_main() -> usize {
-            $func();
-            0
-        }
-    };
-}
 
 use crate::api::is_irq_context;
 

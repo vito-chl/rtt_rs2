@@ -43,7 +43,7 @@ macro_rules! print {
 #[allow_internal_unstable(print_internals, format_args_nl)]
 macro_rules! println {
     ($($arg:tt)*) => ({
-        $crate::out::_print_unlock(format_args_nl!($($arg)*));
+        $crate::out::_print(format_args_nl!($($arg)*));
     });
 }
 
