@@ -1,5 +1,5 @@
 mod base;
-mod device;
+// mod device;
 mod interrupt;
 mod mem;
 mod mutex;
@@ -8,7 +8,7 @@ mod sem;
 mod thread;
 
 pub use base::*;
-pub use device::*;
+// pub use device::*;
 pub use interrupt::*;
 pub use mem::*;
 pub use mutex::*;

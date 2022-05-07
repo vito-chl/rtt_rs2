@@ -36,10 +36,10 @@ pub mod malloc;
 
 pub mod mutex;
 pub mod out;
+pub mod param;
 pub mod queue;
 pub mod semaphore;
 pub mod thread;
-pub mod param;
 
 mod prelude;
 pub use prelude::v1::*;

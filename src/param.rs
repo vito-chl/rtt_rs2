@@ -8,7 +8,7 @@ pub struct ParamItem(&'static [u8]);
 impl Deref for ParamItem {
     type Target = [u8];
     fn deref(&self) -> &Self::Target {
-        return self.0
+        return self.0;
     }
 }
 

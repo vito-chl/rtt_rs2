@@ -1,19 +1,33 @@
 // Interrupt
 use crate::bind::*;
 
+#[cfg(not(feature = "smp"))]
+unsafe fn irq_close() -> rt_base_t {
+    rt_hw_interrupt_disable()
+}
+#[cfg(feature = "smp")]
+unsafe fn irq_close() -> rt_base_t {
+    rt_cpus_lock()
+}
+
+#[cfg(not(feature = "smp"))]
+unsafe fn irq_open(f: rt_base_t) {
+    rt_hw_interrupt_enable(f)
+}
+#[cfg(feature = "smp")]
+unsafe fn irq_open(f: rt_base_t) {
+    rt_cpus_unlock(f)
+}
+
 pub fn no_irq<F, T>(f: F) -> T
 where
     F: FnOnce() -> T,
 {
     let level;
     let out;
-    unsafe {
-        level = rt_hw_interrupt_disable();
-    }
+    unsafe { level = irq_close() }
     out = f();
-    unsafe {
-        rt_hw_interrupt_enable(level);
-    }
+    unsafe { irq_open(level) }
     out
 }
 
@@ -23,13 +37,11 @@ pub struct InterruptFlag(rt_base_t);
 pub const INTERRUPT_FLAG_INIT: InterruptFlag = InterruptFlag { 0: 0 as _ };
 
 pub fn interrupt_disable() -> InterruptFlag {
-    unsafe { InterruptFlag(rt_hw_interrupt_disable()) }
+    unsafe { InterruptFlag(irq_close()) }
 }
 
 pub fn interrupt_enable(f: InterruptFlag) {
-    unsafe {
-        rt_hw_interrupt_enable(f.0);
-    }
+    unsafe { irq_open(f.0) }
 }
 
 pub fn interrupt_enter() {

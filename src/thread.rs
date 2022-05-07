@@ -16,10 +16,10 @@
 //!
 
 use crate::alloc::boxed::Box;
+use crate::api::*;
 use crate::{RTResult, RTTError};
 use alloc::string::String;
 use core::mem;
-use crate::api::*;
 
 #[derive(Debug)]
 pub struct Thread(APIRawThread);
@@ -91,7 +91,7 @@ impl Thread {
             priority,
             ticks,
         )
-            .ok_or(RTTError::OutOfMemory)?;
+        .ok_or(RTTError::OutOfMemory)?;
 
         let ret = match Self::_startup(th_handle) {
             Ok(_) => {
@@ -120,8 +120,8 @@ impl Thread {
         ticks: u32,
         func: F,
     ) -> RTResult<Thread>
-        where
-            F: FnOnce() -> () + Send + 'static,
+    where
+        F: FnOnce() -> () + Send + 'static,
     {
         unsafe { Self::spawn_inner(name, stack_size, priority, ticks, Box::new(func)) }
     }
@@ -158,9 +158,9 @@ impl ThreadBuilder {
     }
 
     pub fn start<F>(&self, func: F) -> RTResult<Thread>
-        where
-            F: FnOnce() -> (),
-            F: Send + 'static,
+    where
+        F: FnOnce() -> (),
+        F: Send + 'static,
     {
         Thread::spawn(
             self.th_name.clone(),
