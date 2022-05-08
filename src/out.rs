@@ -29,7 +29,9 @@ impl fmt::Write for StdOut {
 }
 
 pub fn _print(args: fmt::Arguments) {
-    StdOut.write_fmt(args).unwrap();
+    unsafe {
+        StdOut.write_fmt(args).unwrap_unchecked();
+    }
 }
 
 #[macro_export]
