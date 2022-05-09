@@ -38,6 +38,26 @@ impl From<i32> for RttCResult {
     }
 }
 
+impl From<i64> for RttCResult {
+    fn from(a: i64) -> Self {
+        let ret = match a {
+            0 => RttCResult::Ok,
+            -1 => RttCResult::Error,
+            -2 => RttCResult::TimeOut,
+            -3 => RttCResult::Full,
+            -4 => RttCResult::Empty,
+            -5 => RttCResult::NoMem,
+            -6 => RttCResult::NoSys,
+            -7 => RttCResult::Busy,
+            -8 => RttCResult::IO,
+            -9 => RttCResult::INTR,
+            -10 => RttCResult::INVAL,
+            _ => RttCResult::NotValidCode,
+        };
+        ret
+    }
+}
+
 pub fn is_eok(val: RttCResult) -> bool {
     if let RttCResult::Ok = val {
         true
