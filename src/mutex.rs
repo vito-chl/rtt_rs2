@@ -32,7 +32,7 @@ use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut};
 use core::sync::atomic::*;
 
-const RT_WAITING_FOREVER: i32 = -1;
+const RT_WAITING_FOREVER: isize = -1;
 
 unsafe impl<T: Send> Send for Mutex<T> {}
 unsafe impl<T: Send> Sync for Mutex<T> {}
@@ -61,7 +61,7 @@ impl<T> Mutex<T> {
         })
     }
 
-    pub fn try_lock(&self, max_wait: i32) -> Result<MutexGuard<SleepMutex, T>, RTTError> {
+    pub fn try_lock(&self, max_wait: isize) -> Result<MutexGuard<SleepMutex, T>, RTTError> {
         self.mutex.take(max_wait)?;
         Ok(MutexGuard {
             __mutex: &self.mutex,
@@ -94,7 +94,7 @@ impl<T, M: RawMutexOps> Mutex<T, M> {
         })
     }
 
-    pub fn spec_try_lock(&self, max_wait: i32) -> Result<MutexGuard<M, T>, RTTError> {
+    pub fn spec_try_lock(&self, max_wait: isize) -> Result<MutexGuard<M, T>, RTTError> {
         self.mutex.take(max_wait)?;
         Ok(MutexGuard {
             __mutex: &self.mutex,
@@ -154,7 +154,7 @@ pub struct AtomicMutex(UnsafeCell<InterruptFlag>, AtomicBool);
 
 pub trait RawMutexOps: Sized {
     fn create(name: &str) -> Result<Self, RTTError>;
-    fn take(&self, max_wait: i32) -> Result<(), RTTError>;
+    fn take(&self, max_wait: isize) -> Result<(), RTTError>;
     fn release(&self);
     fn drop(&mut self);
 }
@@ -167,7 +167,7 @@ impl RawMutexOps for AtomicMutex {
         })
     }
 
-    fn take(&self, max_wait: i32) -> Result<(), RTTError> {
+    fn take(&self, max_wait: isize) -> Result<(), RTTError> {
         let f;
         unsafe {
             f = self.0.get();
@@ -221,7 +221,7 @@ impl RawMutexOps for SleepMutex {
             .map(|m| SleepMutex(m))
     }
 
-    fn take(&self, max_wait: i32) -> Result<(), RTTError> {
+    fn take(&self, max_wait: isize) -> Result<(), RTTError> {
         panic_atomic_context("mutex take");
         let ret = mutex_take(self.0, max_wait);
         if !is_eok(ret) {

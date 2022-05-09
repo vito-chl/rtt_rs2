@@ -27,8 +27,8 @@ pub fn mutex_delete(handle: APIRawMutex) {
 }
 
 #[inline]
-pub fn mutex_take(handle: APIRawMutex, tick: i32) -> RttCResult {
-    unsafe { rt_mutex_take(handle, tick).into() }
+pub fn mutex_take(handle: APIRawMutex, tick: isize) -> RttCResult {
+    unsafe { rt_mutex_take(handle, tick as _).into() }
 }
 
 #[inline]
