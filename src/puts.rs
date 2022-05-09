@@ -1,16 +1,23 @@
+use core::cmp::min;
+
+fn up_cast(a: usize, b: usize) -> usize {
+    let r = a / b;
+    return if a % b == 0 {
+        r
+    } else {
+        r + 1
+    };
+}
+
 pub(crate) fn puts(str: &str, kp: fn(s: *const u8)) {
-    let mut buf = [0 as u8; 128];
-    let mut e_index = 0;
-    for (index, ch) in str.bytes().enumerate() {
-        buf[index % 127] = ch;
-        if index != 0 && index % 126 == 0 {
-            buf[127] = 0;
-            kp(buf.as_ptr())
+    let str = str.as_bytes();
+    let mut buf = [0 as u8; 129];
+    for i in 0..up_cast(str.len(), 128) {
+        let end = min(128, str.len() - i * 128);
+        for j in 0..end {
+            buf[j] = str[(j + i * 128) as usize];
         }
-        e_index = index;
-    }
-    if e_index % 126 != 0 {
-        buf[e_index % 127 + 1] = 0;
+        buf[end] = 0;
         kp(buf.as_ptr())
     }
 }
@@ -36,19 +43,37 @@ mod tests {
             }
         }
 
-        let data = r"
-            This is a very long string.
-            This is a very long string.
-            This is a very long string.
-            This is a very long string.
-            This is a very long string.
-            This is a very long string.
-        ";
-
-        puts(data, kputs);
-
-        assert!(data.len() > 128);
-        let out = OUT.lock().unwrap();
-        assert_eq!(data.cmp(out.as_str()), Ordering::Equal);
+        {
+            let data = r"
+                This is a very long string.
+                This is a very long string.
+                This is a very long string.
+                This is a very long string.
+                This is a very long string.
+                This is a very long string.
+            ";
+            assert!(data.len() > 128);
+            puts(data, kputs);
+            let mut out = OUT.lock().unwrap();
+            print!("{}", out);
+            assert_eq!(data.cmp(out.as_str()), Ordering::Equal);
+            out.clear();
+        }
+        {
+            let data = "hello";
+            puts(data, kputs);
+            let mut out = OUT.lock().unwrap();
+            print!("{}", out);
+            assert_eq!(data.cmp(out.as_str()), Ordering::Equal);
+            out.clear();
+        }
+        {
+            let data = "k";
+            puts(data, kputs);
+            let mut out = OUT.lock().unwrap();
+            print!("{}", out);
+            assert_eq!(data.cmp(out.as_str()), Ordering::Equal);
+            out.clear();
+        }
     }
 }
