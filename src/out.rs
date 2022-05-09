@@ -1,29 +1,19 @@
 //! Provide the output function of debugging serial port
 
 use crate::bind::*;
-
-#[inline]
-pub(crate) fn puts(str: &str) {
-    let mut buf = [0 as u8; 128];
-    for (index, ch) in str.bytes().enumerate() {
-        buf[index] = ch;
-        if index == 126 {
-            buf[index + 1] = 0;
-            break;
-        }
-    }
-    unsafe {
-        rt_kputs(buf.as_ptr());
-    }
-}
-
 use core::fmt::{self, Write};
+use crate::puts::puts;
 
 struct StdOut;
 
 impl fmt::Write for StdOut {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        puts(s);
+        fn rtt_kputs(s: *const u8) {
+            unsafe {
+                rt_kputs(s as _)
+            }
+        }
+        puts(s, rtt_kputs);
         Ok(())
     }
 }
