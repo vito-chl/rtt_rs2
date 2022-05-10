@@ -1,17 +1,15 @@
 //! Provide the output function of debugging serial port
 
 use crate::bind::*;
-use core::fmt::{self, Write};
 use crate::puts::puts;
+use core::fmt::{self, Write};
 
 struct StdOut;
 
 impl fmt::Write for StdOut {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         fn rtt_kputs(s: *const u8) {
-            unsafe {
-                rt_kputs(s as _)
-            }
+            unsafe { rt_kputs(s as _) }
         }
         puts(s, rtt_kputs);
         Ok(())

@@ -4,7 +4,7 @@ use crate::api::*;
 use crate::{panic_on_atomic_context, RTTError};
 use core::cell::UnsafeCell;
 use core::marker::PhantomData;
-use core::mem::{MaybeUninit, size_of};
+use core::mem::{size_of, MaybeUninit};
 
 const RT_WAITING_FOREVER: isize = -1;
 
@@ -37,21 +37,21 @@ impl<T> Queue<T> {
             })
     }
 
-    pub fn try_send(&self, item: T) -> Result<(), RTTError> {
+    pub fn try_send(&self, item: T) -> Result<(), (RTTError, T)> {
         self._send(item, 0)
     }
 
-    pub fn send(&self, item: T, max_wait: i32) -> Result<(), RTTError> {
+    pub fn send(&self, item: T, max_wait: i32) -> Result<(), (RTTError, T)> {
         panic_on_atomic_context("queue send");
         self._send(item, max_wait)
     }
 
-    pub fn send_wait_forever(&self, item: T) -> Result<(), RTTError> {
+    pub fn send_wait_forever(&self, item: T) -> Result<(), (RTTError, T)> {
         panic_on_atomic_context("queue send wait forever");
         self._send(item, RT_WAITING_FOREVER as _)
     }
 
-    fn _send(&self, item: T, max_wait: i32) -> Result<(), RTTError> {
+    fn _send(&self, item: T, max_wait: i32) -> Result<(), (RTTError, T)> {
         let inner = MaybeUninit::new(item);
         let ret = queue_send_wait(
             self.queue,
@@ -60,7 +60,7 @@ impl<T> Queue<T> {
             max_wait,
         );
         return if !is_eok(ret) {
-            Err(RTTError::QueueSendTimeout)
+            unsafe { Err((RTTError::QueueSendTimeout, inner.assume_init())) }
         } else {
             Ok(())
         };
@@ -89,9 +89,7 @@ impl<T> Queue<T> {
             max_wait,
         );
         return if is_eok(ret) {
-            Ok(unsafe {
-                inner.assume_init()
-            })
+            Ok(unsafe { inner.assume_init() })
         } else {
             Err(RTTError::QueueReceiveTimeout)
         };

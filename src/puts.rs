@@ -2,11 +2,7 @@ use core::cmp::min;
 
 fn up_cast(a: usize, b: usize) -> usize {
     let r = a / b;
-    return if a % b == 0 {
-        r
-    } else {
-        r + 1
-    };
+    return if a % b == 0 { r } else { r + 1 };
 }
 
 pub(crate) fn puts(str: &str, kp: fn(s: *const u8)) {
@@ -24,9 +20,9 @@ pub(crate) fn puts(str: &str, kp: fn(s: *const u8)) {
 
 #[cfg(test)]
 mod tests {
-    use std::cmp::Ordering;
     use super::*;
     use lazy_static::lazy_static;
+    use std::cmp::Ordering;
     use std::sync::Mutex;
     lazy_static! {
         static ref OUT: Mutex<String> = Mutex::new(String::new());

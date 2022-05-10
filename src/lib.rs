@@ -5,10 +5,8 @@
 //!
 //! You can use this library on embedded devices that support rt-thread
 
-
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(not(feature = "std"), cfg(not(test)))]
-
 #![feature(alloc_error_handler)]
 #![feature(allow_internal_unstable)]
 #![feature(const_fn_fn_ptr_basics)]

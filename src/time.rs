@@ -1,5 +1,5 @@
-use core::time::Duration;
 use crate::api::*;
+use core::time::Duration;
 
 pub fn sleep(time: Duration) {
     let mut time = time.as_millis();
@@ -9,9 +9,9 @@ pub fn sleep(time: Duration) {
         match time {
             1..=MAX_DELAY => {
                 let _ = thread_m_delay(time as i32);
-                return
+                return;
             }
-            0 => { return }
+            0 => return,
             MAX_DELAY_P1..=u128::MAX => {
                 let _ = thread_m_delay(i32::MAX);
                 time -= i32::MAX as u128;
