@@ -66,11 +66,11 @@ cfg_if::cfg_if! {
 
         pub type RTResult<T> = Result<T, RTTError>;
 
-        fn panic_atomic_context(s: &str) {
+        fn panic_on_atomic_context(s: &str) {
             use crate::api::is_irq_context;
             use core::intrinsics::unlikely;
             if unlikely(is_irq_context()) {
-                panic!("{}", s);
+                panic!("In irq context {}", s);
             }
         }
 

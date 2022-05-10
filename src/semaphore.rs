@@ -28,7 +28,7 @@
 #![allow(dead_code)]
 
 use crate::api::*;
-use crate::RTTError;
+use crate::{panic_on_atomic_context, RTTError};
 use core::cell::UnsafeCell;
 
 unsafe impl Send for Semaphore {}
@@ -60,6 +60,7 @@ impl Semaphore {
     }
 
     pub fn take_wait_forever(&self) -> Result<(), RTTError> {
+        panic_on_atomic_context("sem wait forever");
         let ret = unsafe { semaphore_take(*self.0.get(), -1) };
 
         if !is_eok(ret) {
@@ -70,6 +71,7 @@ impl Semaphore {
     }
 
     pub fn take(&self, max_wait: i32) -> Result<(), RTTError> {
+        panic_on_atomic_context("sem take");
         let ret = unsafe { semaphore_take(*self.0.get(), max_wait) };
 
         if !is_eok(ret) {

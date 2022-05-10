@@ -1,10 +1,12 @@
 //! Passing information between threads
 
 use crate::api::*;
-use crate::{Box, RTTError};
+use crate::{panic_on_atomic_context, RTTError};
 use core::cell::UnsafeCell;
 use core::marker::PhantomData;
-use core::mem;
+use core::mem::{MaybeUninit, size_of};
+
+const RT_WAITING_FOREVER: isize = -1;
 
 unsafe impl<T> Send for Queue<T> where T: Send {}
 unsafe impl<T> Sync for Queue<T> where T: Send {}
@@ -18,7 +20,7 @@ pub struct Queue<T> {
 
 impl<T> Queue<T> {
     pub fn new(max_size: usize) -> Result<Queue<T>, RTTError> {
-        queue_create("Unnamed", max_size as _, Self::mem_size() as _)
+        queue_create("Unnamed", max_size as _, size_of::<T>() as _)
             .ok_or(RTTError::OutOfMemory)
             .map(|m| Queue {
                 queue: m,
@@ -27,7 +29,7 @@ impl<T> Queue<T> {
     }
 
     pub fn new_with_name(name: &str, max_size: usize) -> Result<Queue<T>, RTTError> {
-        queue_create(name, max_size as _, Self::mem_size() as _)
+        queue_create(name, max_size as _, size_of::<T>() as _)
             .ok_or(RTTError::OutOfMemory)
             .map(|m| Queue {
                 queue: m,
@@ -35,27 +37,28 @@ impl<T> Queue<T> {
             })
     }
 
-    #[inline]
-    pub const fn mem_size() -> usize {
-        mem::size_of::<*mut T>()
+    pub fn try_send(&self, item: T) -> Result<(), RTTError> {
+        self._send(item, 0)
     }
 
-    pub fn send(&self, item: T) -> Result<(), RTTError> {
-        Self::send_wait(&self, item, 0)
+    pub fn send(&self, item: T, max_wait: i32) -> Result<(), RTTError> {
+        panic_on_atomic_context("queue send");
+        self._send(item, max_wait)
     }
 
-    pub fn send_wait(&self, item: T, max_wait: i32) -> Result<(), RTTError> {
-        let s = Box::new(item);
-        let s = Box::new(s);
-        let s = Box::into_raw(s);
+    pub fn send_wait_forever(&self, item: T) -> Result<(), RTTError> {
+        panic_on_atomic_context("queue send wait forever");
+        self._send(item, RT_WAITING_FOREVER as _)
+    }
 
+    fn _send(&self, item: T, max_wait: i32) -> Result<(), RTTError> {
+        let inner = MaybeUninit::new(item);
         let ret = queue_send_wait(
             self.queue,
-            &s as *const _ as *const c_void,
-            Self::mem_size() as _,
+            inner.as_ptr() as *const c_void,
+            size_of::<T>() as _,
             max_wait,
         );
-
         return if !is_eok(ret) {
             Err(RTTError::QueueSendTimeout)
         } else {
@@ -63,18 +66,31 @@ impl<T> Queue<T> {
         };
     }
 
-    pub fn receive(&self, max_wait: i32) -> Result<T, RTTError> {
-        let mut ptr = 0 as *mut Box<T>;
+    pub fn try_recv(&self) -> Result<T, RTTError> {
+        self._receive(0)
+    }
+
+    pub fn recv(&self, max_wait: i32) -> Result<T, RTTError> {
+        panic_on_atomic_context("queue recv");
+        self._receive(max_wait)
+    }
+
+    pub fn recv_wait_forever(&self) -> Result<T, RTTError> {
+        panic_on_atomic_context("queue recv wait forever");
+        self._receive(RT_WAITING_FOREVER as _)
+    }
+
+    fn _receive(&self, max_wait: i32) -> Result<T, RTTError> {
+        let mut inner = MaybeUninit::<T>::uninit();
         let ret = queue_receive_wait(
             self.queue,
-            &mut ptr as *mut _ as *mut c_void,
-            Self::mem_size() as _,
+            inner.as_mut_ptr() as *mut c_void,
+            size_of::<T>() as _,
             max_wait,
         );
         return if is_eok(ret) {
             Ok(unsafe {
-                let y = Box::from_raw(ptr);
-                **y
+                inner.assume_init()
             })
         } else {
             Err(RTTError::QueueReceiveTimeout)
