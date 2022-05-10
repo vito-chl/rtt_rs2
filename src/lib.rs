@@ -14,6 +14,7 @@
 #![feature(const_fn_fn_ptr_basics)]
 #![feature(const_fn_trait_bound)]
 #![feature(linkage)]
+#![feature(core_intrinsics)]
 #![allow(dead_code)]
 
 mod puts;
@@ -67,7 +68,8 @@ cfg_if::cfg_if! {
 
         fn panic_atomic_context(s: &str) {
             use crate::api::is_irq_context;
-            if is_irq_context() {
+            use core::intrinsics::unlikely;
+            if unlikely(is_irq_context()) {
                 panic!("{}", s);
             }
         }
