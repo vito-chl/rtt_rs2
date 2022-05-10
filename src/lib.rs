@@ -37,6 +37,7 @@ cfg_if::cfg_if! {
         pub mod queue;
         pub mod semaphore;
         pub mod thread;
+        pub mod time;
 
         mod prelude;
         pub use prelude::v1::*;

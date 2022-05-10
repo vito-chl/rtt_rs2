@@ -33,7 +33,7 @@ impl Thread {
 
     /// Delay some millisecond
     pub fn ms_delay(ms: usize) {
-        let _ = thread_m_delay(ms);
+        let _ = thread_m_delay(ms as i32);
     }
 
     pub fn new() -> ThreadBuilder {

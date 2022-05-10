@@ -87,7 +87,7 @@ pub fn thread_delay(ticks: usize) -> RttCResult {
 
 // Thread have a ms sleep
 #[inline]
-pub fn thread_m_delay(ms: usize) -> RttCResult {
+pub fn thread_m_delay(ms: i32) -> RttCResult {
     unsafe { rt_thread_mdelay(ms as _).into() }
 }
 
