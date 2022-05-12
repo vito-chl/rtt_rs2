@@ -15,7 +15,7 @@ unsafe impl<T> Sync for Queue<T> where T: Send {}
 pub struct Queue<T> {
     queue: APIRawQueue,
     /* only for store item type */
-    item_type: PhantomData<UnsafeCell<T>>,
+    item_type: PhantomData<*const UnsafeCell<[T; 8]>>,
 }
 
 impl<T> Queue<T> {
