@@ -5,8 +5,7 @@
 //!
 //! You can use this library on embedded devices that support rt-thread
 
-#![cfg_attr(not(feature = "std"), no_std)]
-#![cfg_attr(not(feature = "std"), cfg(not(test)))]
+#![cfg_attr(not(feature = "host_test"), no_std)]
 #![feature(alloc_error_handler)]
 #![feature(allow_internal_unstable)]
 #![feature(const_fn_fn_ptr_basics)]
@@ -15,13 +14,12 @@
 #![feature(core_intrinsics)]
 #![allow(dead_code)]
 
+pub extern crate alloc;
 mod puts;
 
-pub extern crate alloc;
-
 cfg_if::cfg_if! {
-
-    if #[cfg(not(feature = "std"))] {
+    if #[cfg(feature = "host_test")] {
+    } else {
         #[doc = "Alloc by rt-thread"]
         #[global_allocator]
         static GLOBAL: malloc::RttAlloc = malloc::RttAlloc;
