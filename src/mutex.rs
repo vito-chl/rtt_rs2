@@ -45,56 +45,23 @@ where
     data: UnsafeCell<T>,
 }
 
-// Impl for Default Mutex<M = SleepMutex, NAME = UnnamedObj>
-impl<T> Mutex<T> {
-    pub fn new(t: T) -> Result<Self, RTTError> {
-        Ok(Mutex {
-            mutex: SleepMutex::create("Unnamed")?,
-            data: UnsafeCell::new(t),
-        })
-    }
-
-    pub fn new_with_name(t: T, name: &str) -> Result<Self, RTTError> {
-        Ok(Mutex {
-            mutex: SleepMutex::create(name)?,
-            data: UnsafeCell::new(t),
-        })
-    }
-
-    pub fn try_lock(&self, max_wait: isize) -> Result<MutexGuard<SleepMutex, T>, RTTError> {
-        self.mutex.take(max_wait)?;
-        Ok(MutexGuard {
-            __mutex: &self.mutex,
-            __data: &self.data,
-        })
-    }
-
-    pub fn lock(&self) -> Result<MutexGuard<SleepMutex, T>, RTTError> {
-        self.mutex.take(RT_WAITING_FOREVER)?;
-        Ok(MutexGuard {
-            __mutex: &self.mutex,
-            __data: &self.data,
-        })
-    }
-}
-
-// Impl for all Mutex
+// Impl for Mutex
 impl<T, M: RawMutexOps> Mutex<T, M> {
-    pub fn spec_new(t: T) -> Result<Self, RTTError> {
+    pub fn new(t: T) -> Result<Self, RTTError> {
         Ok(Mutex {
             mutex: M::create("Unnamed")?,
             data: UnsafeCell::new(t),
         })
     }
 
-    pub fn spec_new_with_name(t: T, name: &str) -> Result<Self, RTTError> {
+    pub fn new_with_name(t: T, name: &str) -> Result<Self, RTTError> {
         Ok(Mutex {
             mutex: M::create(name)?,
             data: UnsafeCell::new(t),
         })
     }
 
-    pub fn spec_try_lock(&self, max_wait: isize) -> Result<MutexGuard<M, T>, RTTError> {
+    pub fn try_lock(&self, max_wait: isize) -> Result<MutexGuard<M, T>, RTTError> {
         self.mutex.take(max_wait)?;
         Ok(MutexGuard {
             __mutex: &self.mutex,
@@ -102,7 +69,7 @@ impl<T, M: RawMutexOps> Mutex<T, M> {
         })
     }
 
-    pub fn spec_lock(&self) -> Result<MutexGuard<M, T>, RTTError> {
+    pub fn lock(&self) -> Result<MutexGuard<M, T>, RTTError> {
         self.mutex.take(RT_WAITING_FOREVER)?;
         Ok(MutexGuard {
             __mutex: &self.mutex,
