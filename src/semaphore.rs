@@ -37,7 +37,7 @@ unsafe impl Sync for Semaphore {}
 
 pub struct Semaphore {
     data: PhantomData<*const UnsafeCell<usize>>,
-    sem: APIRawSem,
+    sem: APIRawSem
 }
 
 impl Semaphore {
@@ -51,7 +51,7 @@ impl Semaphore {
             .ok_or(RTTError::OutOfMemory)
             .map(|m| Semaphore {
                 data: Default::default(),
-                sem: m,
+                sem: m
             })
     }
 
